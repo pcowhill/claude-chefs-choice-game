@@ -325,7 +325,7 @@ html, body {
 /* --- title ---------------------------------------------------------------- */
 .title-screen {
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 42%, rgba(5, 3, 14, 0.1) 0%, rgba(4, 2, 10, 0.78) 82%);
+  background: radial-gradient(ellipse at 50% 42%, rgba(5, 3, 14, 0.34) 0%, rgba(4, 2, 10, 0.84) 82%);
 }
 .title-block { text-align: center; transform: translateY(calc(var(--u) * -1.2)); }
 .title-eyebrow {

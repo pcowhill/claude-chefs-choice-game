@@ -94,15 +94,44 @@ export function drawWorld(ctx: CanvasRenderingContext2D, run: Run, time: number)
 }
 
 // ---------------------------------------------------------------------------
+// cached full-screen light/dark textures (per-frame gradients are costly)
+let lightTex: HTMLCanvasElement | null = null
+function getLightTex(): HTMLCanvasElement {
+  if (lightTex) return lightTex
+  const c = document.createElement('canvas')
+  c.width = c.height = 512
+  const g = c.getContext('2d')!
+  const grad = g.createRadialGradient(256, 256, 0, 256, 256, 256)
+  grad.addColorStop(0, rgba(PAL.starGlow, 1))
+  grad.addColorStop(0.4, rgba(PAL.starGlow, 0.4))
+  grad.addColorStop(1, rgba(PAL.starGlow, 0))
+  g.fillStyle = grad
+  g.fillRect(0, 0, 512, 512)
+  lightTex = c
+  return c
+}
+
+let voidTex: HTMLCanvasElement | null = null
+function getVoidTex(): HTMLCanvasElement {
+  if (voidTex) return voidTex
+  const c = document.createElement('canvas')
+  c.width = c.height = 1024
+  const g = c.getContext('2d')!
+  const grad = g.createRadialGradient(512, 512, 512 * 0.497, 512, 512, 512)
+  grad.addColorStop(0, 'rgba(2,1,6,0)')
+  grad.addColorStop(1, 'rgba(2,1,6,1)')
+  g.fillStyle = grad
+  g.fillRect(0, 0, 1024, 1024) // corners extend to full dark
+  voidTex = c
+  return c
+}
+
 function drawStarLight(ctx: CanvasRenderingContext2D, run: Run, hpFrac: number, time: number) {
   const breathe = 1 + Math.sin(time * 1.1) * 0.02
   const reach = (430 + 560 * (0.2 + 0.8 * hpFrac)) * breathe
-  const g = ctx.createRadialGradient(CENTER.x, CENTER.y, 0, CENTER.x, CENTER.y, reach)
-  g.addColorStop(0, rgba(PAL.starGlow, 0.16 + 0.1 * hpFrac))
-  g.addColorStop(0.4, rgba(PAL.starGlow, 0.07))
-  g.addColorStop(1, rgba(PAL.starGlow, 0))
-  ctx.fillStyle = g
-  ctx.fillRect(0, 0, WORLD.w, WORLD.h)
+  ctx.globalAlpha = 0.17 + 0.11 * hpFrac
+  ctx.drawImage(getLightTex(), CENTER.x - reach, CENTER.y - reach, reach * 2, reach * 2)
+  ctx.globalAlpha = 1
   if (run.star.hurtT > 0) {
     ctx.fillStyle = rgba(PAL.danger, run.star.hurtT * 0.1)
     ctx.fillRect(0, 0, WORLD.w, WORLD.h)
@@ -151,9 +180,9 @@ function drawFrostAuras(ctx: CanvasRenderingContext2D, run: Run, time: number) {
     ctx.arc(s.x, s.y, radius, 0, Math.PI * 2)
     ctx.fill()
     // rotating rim dashes
-    ctx.strokeStyle = rgba(PAL.frost, 0.22)
+    ctx.strokeStyle = rgba(PAL.frost, 0.12)
     ctx.lineWidth = 1.4
-    ctx.setLineDash([10, 14])
+    ctx.setLineDash([8, 18])
     ctx.lineDashOffset = -time * 26
     ctx.beginPath()
     ctx.arc(s.x, s.y, radius, 0, Math.PI * 2)
@@ -231,25 +260,26 @@ function drawBeams(ctx: CanvasRenderingContext2D, run: Run, time: number) {
   ctx.globalCompositeOperation = 'lighter'
   ctx.lineCap = 'round'
   for (const b of run.beams) {
+    const merged = b.power >= 2
     const fl = 0.85 + 0.15 * Math.sin(time * 31 + b.x)
     const ex = b.x + Math.cos(b.ang) * b.len
     const ey = b.y + Math.sin(b.ang) * b.len
     const g = ctx.createLinearGradient(b.x, b.y, ex, ey)
-    g.addColorStop(0, rgba(b.color, 0.5 * fl))
-    g.addColorStop(0.75, rgba(b.color, 0.28 * fl))
+    g.addColorStop(0, rgba(b.color, (merged ? 0.5 : 0.24) * fl))
+    g.addColorStop(0.75, rgba(b.color, (merged ? 0.28 : 0.12) * fl))
     g.addColorStop(1, rgba(b.color, 0))
     ctx.strokeStyle = g
-    ctx.lineWidth = b.width * 2.4
+    ctx.lineWidth = b.width * (merged ? 2.4 : 1.5)
     ctx.beginPath()
     ctx.moveTo(b.x, b.y)
     ctx.lineTo(ex, ey)
     ctx.stroke()
     // white-hot core
     const g2 = ctx.createLinearGradient(b.x, b.y, ex, ey)
-    g2.addColorStop(0, rgba('#ffffff', (b.power >= 2 ? 0.85 : 0.55) * fl))
+    g2.addColorStop(0, rgba('#ffffff', (merged ? 0.85 : 0.34) * fl))
     g2.addColorStop(1, rgba('#ffffff', 0))
     ctx.strokeStyle = g2
-    ctx.lineWidth = Math.max(1.5, b.width * (b.power >= 2 ? 0.8 : 0.5))
+    ctx.lineWidth = Math.max(1.2, b.width * (merged ? 0.8 : 0.35))
     ctx.beginPath()
     ctx.moveTo(b.x, b.y)
     ctx.lineTo(ex, ey)
@@ -530,11 +560,10 @@ function drawArcs(ctx: CanvasRenderingContext2D, run: Run) {
 function drawVoidEdge(ctx: CanvasRenderingContext2D, hpFrac: number, time: number) {
   // the void creeps inward as the star dims
   const inner = 640 + 360 * hpFrac
-  const g = ctx.createRadialGradient(CENTER.x, CENTER.y, inner * 0.72, CENTER.x, CENTER.y, inner * 1.45)
-  g.addColorStop(0, 'rgba(2,1,6,0)')
-  g.addColorStop(1, `rgba(2,1,6,${0.5 + 0.35 * (1 - hpFrac)})`)
-  ctx.fillStyle = g
-  ctx.fillRect(0, 0, WORLD.w, WORLD.h)
+  const s = inner * 1.45 // texture half-size; always covers the arena
+  ctx.globalAlpha = 0.5 + 0.35 * (1 - hpFrac)
+  ctx.drawImage(getVoidTex(), CENTER.x - s, CENTER.y - s, s * 2, s * 2)
+  ctx.globalAlpha = 1
 
   if (hpFrac < 0.35) {
     const a = (0.35 - hpFrac) * 0.35 * (0.6 + 0.4 * Math.sin(time * 2.4))

@@ -55,7 +55,7 @@ function resize() {
   const dh = Math.floor(WORLD.h * scale)
   stage.style.width = `${dw}px`
   stage.style.height = `${dh}px`
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
   canvas.width = Math.round(dw * dpr)
   canvas.height = Math.round(dh * dpr)
   viewScale = (dw * dpr) / WORLD.w
@@ -105,7 +105,7 @@ function newDemo(): Run {
   const d = newRun()
   initSerpent(d)
   // a seasoned demo serpent for the attract mode
-  const kinds = ['fang', 'storm', 'frost', 'ember', 'prism', 'fang', 'prism', 'storm', 'prism', 'fang'] as const
+  const kinds = ['fang', 'storm', 'frost', 'ember', 'prism', 'prism', 'prism', 'fang', 'storm', 'fang'] as const
   for (const k of kinds) grow(d, k)
   startHour(d, 4)
   d.phase = 'hour'
@@ -183,6 +183,7 @@ function skipHour() {
 function forceWin() {
   if (!run) return
   run.victory = true
+  endCause = 'victory'
   run.phase = 'dawn'
   run.cineT = 0
   audio.play('dawn')
@@ -345,6 +346,7 @@ function update(dt: number) {
       }
       if (r.cineT > 3.4) {
         r.phase = 'over'
+        if (r.victory) endCause = 'victory'
         finalizeRun(r)
         hudEl.classList.add('hidden')
         showEnd(r, records, newBest, endCause)

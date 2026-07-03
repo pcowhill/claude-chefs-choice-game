@@ -111,7 +111,7 @@ export const TURRETS = {
   },
   prism: {
     name: 'Prism', color: PAL.prism,
-    dps: 10, length: 400, width: 7,
+    dps: 10, length: 300, width: 7,
     mergeAngle: 0.24, // rad tolerance between tangents for merging
     mergeGap: 2, // max slot gap between prisms in a group
     mergePow: 1.38, // group dps = n^mergePow * base
@@ -145,11 +145,11 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<EnemyKind, EnemyDef> = {
-  mite:    { hp: 13,  speed: 86,  r: 8,  cost: 1,   moteValue: 0.34, starDmg: 2,  starBiteT: 1.1, segDmg: 6,  segBiteT: 1.0, score: 10 },
-  stinger: { hp: 24,  speed: 200, r: 9,  cost: 2.2, moteValue: 0.6,  starDmg: 0,  starBiteT: 1,   segDmg: 0,  segBiteT: 1,   score: 25 },
-  spitter: { hp: 48,  speed: 62,  r: 12, cost: 3.5, moteValue: 0.8,  starDmg: 0,  starBiteT: 1,   segDmg: 0,  segBiteT: 1,   score: 35 },
-  splitter:{ hp: 65,  speed: 72,  r: 15, cost: 4,   moteValue: 0.9,  starDmg: 4,  starBiteT: 1.3, segDmg: 9,  segBiteT: 1.2, score: 40 },
-  husk:    { hp: 150, speed: 36,  r: 20, cost: 5,   moteValue: 1.2,  starDmg: 9,  starBiteT: 1.6, segDmg: 18, segBiteT: 1.5, score: 60 },
+  mite:    { hp: 13,  speed: 86,  r: 8,  cost: 1,   moteValue: 0.15, starDmg: 2,  starBiteT: 1.1, segDmg: 6,  segBiteT: 1.0, score: 10 },
+  stinger: { hp: 24,  speed: 188, r: 9,  cost: 2.2, moteValue: 0.4,  starDmg: 0,  starBiteT: 1,   segDmg: 0,  segBiteT: 1,   score: 25 },
+  spitter: { hp: 48,  speed: 62,  r: 12, cost: 3.5, moteValue: 0.5,  starDmg: 0,  starBiteT: 1,   segDmg: 0,  segBiteT: 1,   score: 35 },
+  splitter:{ hp: 65,  speed: 72,  r: 15, cost: 4,   moteValue: 0.55, starDmg: 4,  starBiteT: 1.3, segDmg: 9,  segBiteT: 1.2, score: 40 },
+  husk:    { hp: 150, speed: 36,  r: 20, cost: 5,   moteValue: 0.75, starDmg: 9,  starBiteT: 1.6, segDmg: 18, segBiteT: 1.5, score: 60 },
   maw:     { hp: 2300, speed: 30, r: 36, cost: 0,   moteValue: 0,    starDmg: 10, starBiteT: 1.5, segDmg: 22, segBiteT: 1.4, score: 600 },
   eclipse: { hp: 5600, speed: 42, r: 46, cost: 0,   moteValue: 0,    starDmg: 15, starBiteT: 1.4, segDmg: 26, segBiteT: 1.3, score: 1500 },
 }
@@ -204,7 +204,7 @@ export const ECLIPSE = {
 export const STAR = {
   hp: 100,
   r: 46,
-  trickleInterval: 6.0, // seconds per free mote during waves
+  trickleInterval: 8.0, // seconds per free mote during waves
   trickleDist: 190, // motes land near the star
   sunHealStar: 8,
   sunHealHead: 1,
@@ -240,7 +240,7 @@ export const HOURS: HourDef[] = [
   { duration: 60, budgetPerSec: 1.7, weights: { mite: 0.7, stinger: 0.3 }, boss: 'maw', title: 'THE MAW RISES' },
   { duration: 48, budgetPerSec: 3.4, weights: { mite: 0.34, husk: 0.24, stinger: 0.16, spitter: 0.14, splitter: 0.12 }, title: 'STARLESS HOUR' },
   { duration: 52, budgetPerSec: 3.9, weights: { mite: 0.26, husk: 0.34, stinger: 0.14, spitter: 0.14, splitter: 0.12 }, title: 'THE LONG DARK' },
-  { duration: 52, budgetPerSec: 4.4, weights: { mite: 0.26, husk: 0.2, stinger: 0.24, spitter: 0.2, splitter: 0.1 }, title: 'HOWLING VOID' },
+  { duration: 52, budgetPerSec: 4.4, weights: { mite: 0.31, husk: 0.2, stinger: 0.19, spitter: 0.2, splitter: 0.1 }, title: 'HOWLING VOID' },
   { duration: 56, budgetPerSec: 5.0, weights: { mite: 0.24, husk: 0.22, stinger: 0.16, spitter: 0.14, splitter: 0.24 }, title: 'THE SWARM' },
   { duration: 58, budgetPerSec: 5.7, weights: { mite: 0.22, husk: 0.26, stinger: 0.18, spitter: 0.18, splitter: 0.16 }, title: 'LAST WATCH' },
   { duration: 75, budgetPerSec: 2.6, weights: { mite: 0.4, stinger: 0.25, spitter: 0.2, splitter: 0.15 }, boss: 'eclipse', title: 'THE ECLIPSE' },
